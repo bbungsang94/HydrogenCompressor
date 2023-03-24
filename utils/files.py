@@ -1,22 +1,30 @@
-import copy
-import numba
 import os
 import datetime
 import pandas as pd
 
 
+def get_only_operation(root, filename):
+    dataset = pd.read_csv(os.path.join(root, filename))
+    dataset = dataset[dataset['op'] == 1]
+    return dataset
+
+
+def separate_days(root, filename):
+    days = list(range(1, 32))
+    dataset = pd.read_csv(os.path.join(root, filename))
+    for day in days:
+        dump = dataset[dataset['day'] == day]
+        if (len(dump) > 1):
+            dump.to_csv(os.path.join(root, str(day) + '.csv'), index=False)
+
 def separate_month(root):
     dataset = pd.read_csv(os.path.join(root, "active_dataset.csv"))
-    month = dataset['month']
-    target_index = {6: [], 7: [], 8: []}
-    for idx, item in month.items():
-        target_index[item].append(idx)
+    target_index = [6, 7, 8]
 
-    for target in target_index.keys():
-        dump = dataset.iloc[target_index[target], :]
-        dump.to_csv(str(target) + "dataset.csv", index=False)
-    # 자 움직여볼가..
-    test = 1
+    for target in target_index:
+        dump = dataset[dataset['month'] == target]
+        dump.to_csv(str(target) + "-dataset.csv", index=False)
+
 
 def check_active_row(**row):
     ret = False
@@ -66,8 +74,6 @@ def add_datetime_column(dataset):
         weekday.append(what_day_is_it(kor_time))
         md.append(kor_time.strftime("%m-%d"))
         month.append(kor_time.month)
-        if kor_time.month == 8:
-            test = 1
         day.append(kor_time.day)
         hour.append(kor_time.hour)
         min.append(kor_time.minute)
@@ -107,9 +113,42 @@ def merge_dataset(root):
     new_merged = new_merged.reset_index()
     return new_merged
 
+def merge_and_normalize(root):
+    files = os.listdir(root)
+    merged = None
+    for file in files:
+        dataset = pd.read_csv(os.path.join(root, file))
+        if merged is None:
+            merged = dataset
+        else:
+            merged = pd.concat([merged, dataset])
+
+    # normalize
+    """
+    created_dt	idx	daq_id	leakage_current
+    w	va	current_unbalance
+    kwh_sum	kwh_thismonth	kwh_lastmonth	type
+    current	var	pf_average	kvarh_sum	kvarh_thismonth
+    kvarh_lastmonth	r_v	r_i
+    r_w	r_var	r_va
+    r_volt_unbalance	r_current_unbalance	r_phase
+    r_power_factor	r_power_thd	s_v	s_i	s_w	s_var	s_va	s_volt_unbalance	s_current_unbalance	s_phase	s_power_factor	s_power_thd	t_v	t_i	t_w	t_var	t_va	t_volt_unbalance	t_current_unbalance	t_phase	t_power_factor	t_power_thd	r_swell	s_swell	t_swell	r_sag	s_sag	t_sag	op	r_oc	s_oc	t_oc	sag_year	sag_mon	sag_day	sag_hour	sag_min	sag_sec	swell_year	swell_mon	swell_day	swell_hour	swell_min	swell_sec	total_time	weekday	time_index	month	day	hour	min	sec	label
+
+    """
+
 def main():
-    root = '../data/dataset'
-    separate_month(root)
+    #root = '../data/history'
+    root = './'
+    month = ['6-', '7-', '8-']
+    for mon in month:
+        in_root = os.path.join(root, mon)
+        separate_days(in_root, mon + 'dataset.csv')
+    #separate_month(root)
+    # for mon in month:
+    #     filename = mon + 'dataset.csv'
+    #     dataset = get_only_operation(root, filename)
+    #     dataset.to_csv('only_op-' + filename, index=False)
+    #separate_month(root)
     #dataset = merge_dataset(root)
     #dataset = add_datetime_column(dataset)
     #fast_track()
