@@ -18,7 +18,7 @@ def make_data_idx(dates, window_size=1):
 
 class TagDataset(Dataset):
     def __init__(self, input_size, df, mean_df=None, std_df=None, window_size=1):
-        pass_col = ['created_dt', 'date', 'idx', 'daq_id', 'label']
+        pass_col = ['label']
         self.input_size = input_size
         self.window_size = window_size
         original_df = df.copy()
@@ -29,7 +29,7 @@ class TagDataset(Dataset):
             original_df[sensor_columns] = (df[sensor_columns] - mean_df) / std_df
 
         # 입력 데이터셋을 window 단위로 시퀀스 인덱스 생성
-        dates = original_df['created_dt'].to_list()
+        dates = original_df.index.to_list()
         self.input_ids = make_data_idx(dates, window_size=window_size)
         # 독립변수 설정(센서 데이터)
         self.selected_column = [item for item in original_df.columns if item not in pass_col][:input_size]

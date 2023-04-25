@@ -56,8 +56,32 @@ def what_day_is_it(date):
     return days[day]
 
 
+def del_swell_oc_sag(dataset, window=60):
+    cut_list = ['_swell', '_oc', '_sag']
+    columns = []
+    drop_index = []
+    for col in dataset.columns:
+        for error_name in cut_list:
+            if error_name in col:
+                columns.append(col)
+                break
+
+    for column in columns:
+        index = dataset[dataset[column] == 1].index
+        if len(index) > 0:
+            for pivot in index:
+                if pivot < window:
+                    window = pivot
+                drop_window = list(range(pivot - window, pivot + 1))
+                drop_index += drop_window
+
+    unique_list = list(set(drop_index))
+    dataset.drop(unique_list, axis=0, inplace=True)
+    return dataset
+
 def add_datetime_column(dataset):
     unix_time = dataset['created_dt']
+    operation = dataset['op']
     total_time = []
     md = []
     month = []
@@ -80,7 +104,8 @@ def add_datetime_column(dataset):
         sec.append(kor_time.second)
         check, desc = check_active_row(time_index=kor_time.strftime("%m-%d"),
                                        weekday=what_day_is_it(kor_time), hour=kor_time.hour)
-        if check is True:
+        op = operation[idx]
+        if check is True and op == 1:
             select.append(idx)
             label.append(desc)
 
@@ -92,26 +117,20 @@ def add_datetime_column(dataset):
     dataset['hour'] = hour
     dataset['min'] = min
     dataset['sec'] = sec
-    dataset.to_csv("dataset.csv", index=False)
     active_dataset = dataset.iloc[select, :]
     active_dataset['label'] = label
-    active_dataset.to_csv("active_dataset.csv", index=False)
-    return dataset
+    return active_dataset
 
 def merge_dataset(root):
-    folders = os.listdir(root)
+    files = os.listdir(root)
     merged = None
-    for folder in folders:
-        files = os.listdir(os.path.join(root, folder))
-        for file in files:
-            dataset = pd.read_csv(os.path.join(root, folder, file))
-            if merged is None:
-                merged = dataset
-            else:
-                merged = pd.concat([merged, dataset])
-    new_merged = merged.set_index('created_dt')
-    new_merged = new_merged.reset_index()
-    return new_merged
+    for file in files:
+        dataset = pd.read_csv(os.path.join(root, file), index_col='created_dt')
+        if merged is None:
+            merged = dataset
+        else:
+            merged = pd.concat([merged, dataset])
+    return merged
 
 def merge_and_normalize(root):
     files = os.listdir(root)
