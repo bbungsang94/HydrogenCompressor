@@ -399,6 +399,5 @@ def main(root, filename):
 
 
 if __name__ == '__main__':
-    root_dir = '../data/dataset'
     # make_processable_dataset(root=root_dir, filename='active_dataset.csv')
     main(root=root_dir, filename='model_dataset.csv')

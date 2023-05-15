@@ -336,7 +336,7 @@ def run(args, model, train_loader, test_loader):
 def main():
     history_path = r'D:\MnS\Projects\SerialModel\data\history'
     source_path = r'D:\MnS\Projects\SerialModel\data\dataset'
-    """
+
     #region source 업무시간제거 및 레이블링
     from utils.files import add_datetime_column
 
@@ -350,7 +350,6 @@ def main():
             if len(dataset) > 0:
                 dataset.to_csv(os.path.join(history_path, day_dataset), index=False)
     #endregion
-    """
 
     """
     #region swell, oc, sag 자르기
@@ -373,7 +372,14 @@ def main():
     #endregion
     """
 
+    """
+    from models.preprocessor import extract_feature_day
+    done = extract_feature_day('./data/history/02 del sag swell oc')
+    """
+
     train_all_process(root=source_path, filename='dataset.csv')
 
 if __name__ == "__main__":
+    root_dir = '../data/dataset'
+
     main()
