@@ -69,7 +69,6 @@ def train_all_process(root, filename):
 
     whole_dataset = pd.read_csv(os.path.join(root, filename), index_col='created_dt')
     # 결측치 확인
-
     (whole_dataset.isnull().sum() / len(whole_dataset)).plot.bar(figsize=(18, 8), colormap='Paired')
     # 데이터 레이블 체크
     print(whole_dataset['label'].unique())
@@ -104,9 +103,9 @@ def train_all_process(root, filename):
     args = easydict.EasyDict({
         "batch_size": 32,  # 배치 사이즈 설정
         "device": torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'),  # GPU 사용 여부 설정
-        "input_size": len(mean_df),  # 입력 차원 설정 38
+        "input_size": len(mean_df),  # 입력 차원 설정
         "latent_size": 10,  # Hidden 차원 설정
-        "output_size": len(mean_df),  # 출력 차원 설정 38
+        "output_size": len(mean_df),  # 출력 차원 설정
         "window_size": 60,  # sequence Length
         "num_layers": 2,  # LSTM layer 갯수 설정
         "learning_rate": 0.001,  # learning rate 설정
@@ -134,14 +133,14 @@ def train_all_process(root, filename):
                             latent_dim=args.latent_size,
                             window_size=args.window_size,
                             num_layers=args.num_layers)
-    if os.path.isfile(os.path.join(root, 'data/dataset/LSTM_MODEL.pth')) is True:
-        model.load_state_dict(torch.load(os.path.join(root, "data/dataset/LSTM_MODEL.pth")))
+    if os.path.isfile(os.path.join(root, 'LSTM_MODEL.pth')) is True:
+        model.load_state_dict(torch.load(os.path.join(root, "LSTM_MODEL.pth")))
         model.eval()
         model.to(args.device)
     else:
         model.to(args.device)
         model = run(args, model, train_loader, valid_loader)
-        torch.save(model.state_dict(), 'data/dataset/LSTM_MODEL.pth')
+        torch.save(model.state_dict(), './LSTM_MODEL.pth')
 
     # Validation Loss 연산
     loss_list = get_loss_list(args, model, valid_loader)
@@ -352,7 +351,6 @@ def main():
             if len(dataset) > 0:
                 dataset.to_csv(os.path.join(history_path, day_dataset), index=False)
     #endregion
-    """
 
     """
     #region swell, oc, sag 자르기
@@ -375,8 +373,15 @@ def main():
     #endregion
     """
 
+    """
+    from models.preprocessor import extract_feature_day
+    done = extract_feature_day('./data/history/02 del sag swell oc')
+    """
+
     train_all_process(root=source_path, filename='dataset.csv')
 
+if __name__ == "__main__":
+    root_dir = '../data/dataset'
 
 if __name__ == "__main__":
     os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
