@@ -25,14 +25,16 @@ def get_features(data: pd.Series):
     statistic_dict['comb_p2p'] = np.max(np_data) - np.min(np_data)
     # factor
     statistic_dict['factor_crest'] = statistic_dict['comb_peak'] / statistic_dict['comb_rms']
-    statistic_dict['factor_clearance'] = statistic_dict['comb_peak'] / (np.square(np.sum(np.sqrt(np.abs(np_data))))/len(np_data))
+    statistic_dict['factor_clearance'] = statistic_dict['comb_peak'] / (
+            np.square(np.sum(np.sqrt(np.abs(np_data)))) / len(np_data))
     statistic_dict['factor_shape'] = statistic_dict['comb_rms'] / statistic_dict['data_var']
     statistic_dict['factor_impulse'] = statistic_dict['comb_peak'] / statistic_dict['data_var']
 
     return statistic_dict
 
+
 def extract_feature_day(root):
-    files = os.listdir(root) # 70행 34열 20개 파일
+    files = os.listdir(root)  # 70행 34열 20개 파일
     feature_dict = dict()
 
     for index_day, day_file in enumerate(files):
@@ -41,8 +43,8 @@ def extract_feature_day(root):
         columns = numeric_data.columns.to_list()
         date = day_file.replace('pqm_2_', '').replace('.csv', '').replace('2022', '')
         for column in columns:
-            data = dataset[column] # 한 줄씩 뽑음
-            features = get_features(data) # 18개의 feature가 나옴 dict
+            data = dataset[column]  # 한 줄씩 뽑음
+            features = get_features(data)  # 18개의 feature가 나옴 dict
             features['date'] = date
             features['label'] = label
             for key, value in features.items():
@@ -58,11 +60,6 @@ def extract_feature_day(root):
         filename = key + '.csv'
         root = r'D:\MnS\Projects\SerialModel\data\history\04 features'
         value.to_csv(os.path.join(root, filename))
-
-
-
-
-
 
 
 def drop_col(dataset):
