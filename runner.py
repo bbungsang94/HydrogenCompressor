@@ -64,7 +64,8 @@ def patch_label_on_pca(path='./data/history/06 PCA/dataset.csv'):
 
 def train_all_process(root, filename):
     from models.dataset import TagDataset
-    from models.autoencoder import LSTMAutoEncoder
+ ##   from models.autoencoder import LSTMAutoEncoder
+    from models.IsoForest_Autoencoder import LSTMAutoEncoder
 
     whole_dataset = pd.read_csv(os.path.join(root, filename), index_col='created_dt')
     # 결측치 확인
@@ -334,9 +335,9 @@ def run(args, model, train_loader, test_loader):
 
 
 def main():
-    history_path = r'D:\MnS\Projects\SerialModel\data\history'
-    source_path = r'D:\MnS\Projects\SerialModel\data\dataset'
-
+    history_path = r'C:\Users\MNS\Desktop\SerialModel\data\history'
+    source_path = r'C:\Users\MNS\Desktop\SerialModel\data\dataset'
+    """
     #region source 업무시간제거 및 레이블링
     from utils.files import add_datetime_column
 
@@ -382,4 +383,6 @@ def main():
 if __name__ == "__main__":
     root_dir = '../data/dataset'
 
+if __name__ == "__main__":
+    os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
     main()
